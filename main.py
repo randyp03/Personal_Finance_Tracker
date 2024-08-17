@@ -1,14 +1,13 @@
 import csv
-from data_entry import get_date, get_category, get_memo, get_amount
+from data_entry import get_date, get_category, get_sub_cat, get_memo, get_amount
 import data_visuals
 import os
 import pandas as pd
-import time
 
 class CSV:
     CSV_file = 'transactions.csv'
-    COLUMNS = ['Date','Category','Memo','Amount']
-    date_format = "%m-%d-%Y"
+    COLUMNS = ['Date','Category','Sub-Category','Memo','Amount']
+    DATE_FORMAT = "%m-%d-%Y"
 
     @classmethod
     def initialize_csv(cls):
@@ -19,10 +18,11 @@ class CSV:
             df.to_csv(cls.CSV_file, index=False)
 
     @classmethod
-    def add_entry(cls, date:str, category:str, memo:str, amount:int):
+    def add_entry(cls, date:str, category:str, sub_category: str, memo:str, amount:int):
         new_entry = {
             'Date': date,
             'Category': category,
+            'Sub-Category': sub_category,
             'Memo': memo,
             'Amount': amount
         }
@@ -36,10 +36,10 @@ class CSV:
     def get_summary(cls, start_date:str, end_date:str):
         df = pd.read_csv(cls.CSV_file)
 
-        df['Date'] = pd.to_datetime(df['Date'], format="%d-%m-%Y").dt.strftime(cls.date_format)
+        df['Date'] = pd.to_datetime(df['Date'], format="%d-%m-%Y").dt.strftime(cls.DATE_FORMAT)
         transaction_period = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
         if transaction_period.empty:
-            print(f"\nThere are no transactions within {start_date} and {end_date}\n")
+            print(f"\nThere are no transactions between {start_date} and {end_date}\n")
         else:
             print()
             print(f"Total Income: ${transaction_period[transaction_period['Category']=='Income']['Amount'].sum()}")     
@@ -75,10 +75,11 @@ if __name__ == "__main__":
 
             date = get_date()
             category = get_category()
+            sub_cat = get_sub_cat(category)
             memo = get_memo()
             amount = get_amount()
 
-            CSV.add_entry(date=date, category=category, memo=memo, amount=amount)
+            CSV.add_entry(date=date, category=category, sub_category=sub_cat, memo=memo, amount=amount)
 
         elif choice == 2:
             print('\nYou chose to view transaction summary')

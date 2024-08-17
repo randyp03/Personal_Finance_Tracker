@@ -34,6 +34,7 @@ def draw_cumsum_plot(df):
                  y=df['Amount'].cumsum())
     ax.set_title('Amount Spent Over Time')
     ax.set_xlabel('Date')
+    ax.set_xticks(ax.get_xticks()[::5]) 
     plt.tight_layout()
 
     return plt.show()
@@ -77,12 +78,6 @@ def main(csv_file):
     plot(PLOTS, visuals_df)
 
 if __name__ == "__main__":
-    # csv_file = 'transactions.csv'
+    csv_file = 'transactions.csv'
     
     main(csv_file)
-
-
-
-
-
-

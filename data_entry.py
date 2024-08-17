@@ -1,12 +1,35 @@
 from datetime import datetime
 
-date_format = "%m-%d-%Y"
+DATE_FORMAT = "%m-%d-%Y"
 CATEGORIES = {'I': 'Income',
-              'S': 'Savings',
-              'E': 'Expense'}
+              'S': 'Savings & Investments',
+              'E': 'Essential',
+              'N': 'Non-Essential'}
 
-def get_date(date_format=date_format):
-    date_str = input('Enter Transaction Date or press enter for today\'s date: ')
+SUB_CATEGORIES = {
+    'I': ['Income','Income 2','Income 3'],
+    'S': ['Emergency Fund','Roth IRA'],
+    'E': ['Bills & Utilities',
+          'Medical',
+          'Auto & Transport',
+          'Education',
+          'Health & Fitness',
+          'Pets',
+          'Groceries',
+          'Student Loan',
+          'Car Payment'],
+    'N': ['Shopping',
+          'Entertainment',
+          'Food & Dining',
+          'Gifts',
+          'Travel',
+          'Charity',
+          'Subscriptions',
+          'Other']
+}
+
+def get_date(date_format=DATE_FORMAT):
+    date_str = input('Enter Transaction Date or press enter for today\'s date (mm-dd-yyyy): ')
     if not date_str:
         return datetime.today().strftime(date_format)
     
@@ -22,8 +45,8 @@ def get_category(categories=CATEGORIES):
     print(f"{'*' * 15} Categories {'*' * 15}")
     for cat in categories:
         print(f"{cat} - {categories[cat]}")
-    category = input('\nEnter Category Code: ')
     try:
+        category = input('\nEnter Category Code: ').upper()
         if category in categories.keys():
             return categories[category]
         else:
@@ -33,6 +56,19 @@ def get_category(categories=CATEGORIES):
         print(e)
         print()
         return get_category(categories)
+
+def get_sub_cat(chosen_cat, sub_cats=SUB_CATEGORIES):
+    sub_cat_list = SUB_CATEGORIES[chosen_cat[0]]
+    print(f"{'*' * 15} Sub-Categories {'*' * 15}")
+    for i in range(len(sub_cat_list)):
+        print(f'{i+1} - {sub_cat_list[i]}')
+    try:
+        sub_cat_choice = int(input('\nEnter Sub-Category Code: '))
+        return sub_cat_list[sub_cat_choice - 1]
+    except IndexError:
+        print('\nPlease enter a sub-category from list above')
+        return get_sub_cat()
+    pass
 
 def get_memo():
     memo = input('Enter a short memo: ')
