@@ -4,9 +4,9 @@ import seaborn as sns
 
 def draw_cat_dist(df):
     fig, ax = plt.subplots()
-    sns.barplot(df.groupby('Category')[['Amount']].sum(),
+    sns.barplot(df.loc[df['Category'] != 'Income'].groupby('Category')[['Amount']].sum().sort_values('Amount', ascending=False),
                 x='Amount',
-                y='Category', 
+                y='Category',
                 orient='h')
     ax.set_title('Categorical Distribution')
     ax.set_xlabel('Amount')
@@ -17,18 +17,23 @@ def draw_cat_dist(df):
 
 
 def draw_monthly_plot(df):
-    fig, ax = plt.subplots()
-    sns.lineplot(df.groupby(df['Date_Formatted'].dt.month)[['Amount']].sum(),
-                 x='Date_Formatted',
-                 y='Amount')
-    ax.set_title('Amount Spent per Month')
-    ax.set_xlabel('Date')
+    fig, ax = plt.subplots(figsize=(13,8))
+    sns.barplot(df.loc[df['Category'] != 'Income'].groupby(['Month','Sub-Category'])[['Amount']].sum().sort_values('Amount', ascending=False),
+                x='Amount',
+                y='Month',
+                hue="Sub-Category",
+                dodge=False,
+                orient='h')
+    ax.set_title('Categorical Distribution')
+    ax.set_xlabel('Amount')
+    ax.set_ylabel('Category')
     plt.tight_layout()
 
     return plt.show()
 
 
 def draw_cumsum_plot(df):
+    df=df.loc[df['Category'] != 'Income']
     fig, ax = plt.subplots()
     sns.lineplot(x=df['Date'],
                  y=df['Amount'].cumsum())
@@ -65,13 +70,14 @@ def main(csv_file):
     DATE_FORMAT = '%m-%d-%Y'
     df = pd.read_csv(csv_file)
 
-    visuals_df = df.copy()
+    visuals_df = df.copy().sort_values('Date')
     visuals_df['Date_Formatted'] = pd.to_datetime(visuals_df['Date'], format=DATE_FORMAT)
+    visuals_df['Month'] = visuals_df['Date_Formatted'].dt.month
 
     PLOTS = {
         0: 'Exit',
-        1: 'Amount Spent by Category',
-        2: 'Amount Spent by Month',
+        1: 'Categorical Expenses',
+        2: 'Monthy Expenditure',
         3: 'Cumulative Sum of Dollars Spent',
     }
 
