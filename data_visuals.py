@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-def draw_net_income(df):
+def draw_cash_flow(df):
     net_income_df = df.copy()
     net_income_df.loc[net_income_df['Category'] != 'Income', 'Amount'] *= -1
     net_income_df = net_income_df.groupby(['Month'])[['Amount']].sum().sort_values('Amount', ascending=False)
@@ -16,7 +16,7 @@ def draw_net_income(df):
                 hue = 'Net_Status',
                 palette=palette,
                 legend=False)
-    ax.set_title('Net Income')
+    ax.set_title('Monthly Cash Flow')
     ax.set_xlabel('Month')
     ax.set_ylabel('Amount')
     plt.tight_layout()
@@ -36,7 +36,7 @@ def draw_categorical_expenses(df):
 
     return plt.show()
 
-def draw_monthly_expenditure(df):
+def draw_subcat_expenses(df):
     fig, ax = plt.subplots(figsize=(10,6))
     sns.barplot(df.loc[df['Category'] != 'Income'].groupby(['Month','Sub-Category'])[['Amount']].sum().sort_values('Amount', ascending=False),
                 x='Amount',
@@ -44,21 +44,41 @@ def draw_monthly_expenditure(df):
                 hue="Sub-Category",
                 dodge=False,
                 orient='h')
-    ax.set_title('Monthly Expenditure')
+    ax.set_title('Sub-Category Expenses')
     ax.set_xlabel('Amount')
-    ax.set_ylabel('Category')
+    ax.set_ylabel('Month')
     plt.tight_layout()
 
     return plt.show()
 
 def draw_cumsum_plot(df):
     df=df.loc[df['Category'] != 'Income']
+    df['CumSum'] = df.groupby('Month')['Amount'].cumsum()
+    curr_month = df['Date_Formatted'].dt.to_period('M').max()
+    prev_month = curr_month - 1
+
+    curr_month_df = df.loc[df['Date_Formatted'].dt.to_period('M') == curr_month]
+    prev_month_df = df.loc[df['Date_Formatted'].dt.to_period('M') == prev_month]
+    line_color = '#317fce'
+
     fig, ax = plt.subplots()
-    sns.lineplot(x=df['Date'],
-                 y=df['Amount'].cumsum())
-    ax.set_title('Amount Spent Over Time')
+    sns.lineplot(data=curr_month_df,
+             x='Day',
+             y='CumSum',
+             errorbar=None,
+             color=line_color,
+             label=curr_month)
+    sns.lineplot(data=prev_month_df,
+             x='Day',
+             y='CumSum',
+             errorbar=None,
+             color=line_color,
+             alpha=0.3,
+             linestyle="dashed",
+             label=prev_month)
+    ax.set_title('Monthly Spending')
     ax.set_xlabel('Date')
-    ax.set_xticks(ax.get_xticks()[::5]) 
+    ax.set_ylabel('Amount')
     plt.tight_layout()
 
     return plt.show()
@@ -76,11 +96,11 @@ def plot(PLOTS, df):
         if choice == 0:
             return
         elif choice == 1:
-            draw_net_income(df)
+            draw_cash_flow(df)
         elif choice == 2:
             draw_categorical_expenses(df)
         elif choice == 3:
-            draw_monthly_expenditure(df)
+            draw_subcat_expenses(df)
         elif choice == 4:
             draw_cumsum_plot(df)
     except KeyError:
@@ -94,13 +114,14 @@ def main(csv_file):
     visuals_df = df.copy().sort_values('Date')
     visuals_df['Date_Formatted'] = pd.to_datetime(visuals_df['Date'], format=DATE_FORMAT)
     visuals_df['Month'] = visuals_df['Date_Formatted'].dt.month
+    visuals_df['Day'] = visuals_df['Date_Formatted'].dt.day
 
     PLOTS = {
         0: 'Exit',
-        1: 'Monthly Net Income',
+        1: 'Cash Flow',
         2: 'Categorical Expenses',
-        3: 'Monthy Expenditure',
-        4: 'Cumulative Sum of Dollars Spent',
+        3: 'Sub-Categorical Expenses',
+        4: 'Monthly Spending',
     }
 
     plot(PLOTS, visuals_df)
